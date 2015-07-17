@@ -10,7 +10,7 @@ import grails.transaction.Transactional
 class SimpleGrid3ViewService extends AbstractGrid3ViewService {
     def sessionFactory
     Grid3View buildView(Grid3 grid3){
-        return new SimpleGrid3View(grid3: grid3, rows: loadRows(grid3))
+        return new SimpleGrid3View(grid3, loadRows(grid3))
     }
     private List<Grid3Row> loadRows(Grid3 grid3){
         def session = sessionFactory.openStatelessSession()

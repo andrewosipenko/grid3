@@ -10,7 +10,7 @@ abstract class Grid3Column {
     protected final String alias
     protected final String property
     protected final Grid3 grid3
-    private int index
+    protected int index
 
     public Grid3Column(String path, Grid3 grid3){
         this.path = path
