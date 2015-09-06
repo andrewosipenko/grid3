@@ -6,11 +6,7 @@ import com.osipenko.grid3.view.Grid3Cell
  * Created by osa on 7/1/2015.
  */
 class ValueGrid3Column extends UpdatableGrid3Column {
-    ValueGrid3Column(String path) {
-        super(path)
+    ValueGrid3Column(String path, Grid3 grid3) {
+        super(path, grid3)
     }
-    public Grid3Cell buildGrid3CellFromDataRow(Object[] row){
-        return new Grid3Cell(value: row[index], sourceId: row[index + 1])
-    }
-
 }

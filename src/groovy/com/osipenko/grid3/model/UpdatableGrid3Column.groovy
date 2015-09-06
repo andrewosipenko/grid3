@@ -6,10 +6,16 @@ import com.osipenko.grid3.view.Grid3Cell
  * Created by osa on 7/1/2015.
  */
 abstract class UpdatableGrid3Column extends Grid3Column {
-    public UpdatableGrid3Column(String path){
-        super(path)
-    }
-    public Grid3Cell buildGrid3CellFromDataRow(Object[] row){
-        return new Grid3Cell(value: row[index])
+    protected final Grid3Table grid3Table
+    protected final String keyPath
+    protected final int keyIndex
+
+    public UpdatableGrid3Column(String path, Grid3 grid3){
+        super(path, grid3)
+        grid3Table = grid3.aliasTableMap[alias]
+        println "hello ${alias}"
+        println "hello ${grid3.aliasTableMap}"
+        keyPath = grid3Table.alias + '.' + grid3Table.key
+        keyIndex = assignPathIndex(keyPath)
     }
 }

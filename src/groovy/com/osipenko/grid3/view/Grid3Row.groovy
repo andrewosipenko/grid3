@@ -1,8 +1,18 @@
 package com.osipenko.grid3.view
 
 /**
- * Created by osa on 7/1/2015.
+ * A value class to store a row received from DB.
+ *
+ * @author Andrew Osipenko
  */
-class Grid3Row {
-    List<Grid3Cell> cells
+public final class Grid3Row {
+    private final Object[] data
+
+    public Grid3Row(Object[] data){
+        this.data = data
+    }
+
+    public Object getValue(int index){
+        return data[index]
+    }
 }

@@ -15,13 +15,10 @@ class SimpleGrid3ViewService extends AbstractGrid3ViewService {
     private List<Grid3Row> loadRows(Grid3 grid3){
         def session = sessionFactory.openStatelessSession()
         try{
-            return session.createQuery(grid3.hql)
+            List data = session.createQuery(grid3.hql)
             .list()
-            .collect{ dataRow ->
-                new Grid3Row(
-                    cells: grid3.grid3Columns.collect{it.buildGrid3CellFromDataRow(dataRow)}
-                )
-            }
+            println "Loaded ${data.size()} rows"
+            return data.collect{new Grid3Row(it)}
         } finally {
             session.managedFlush()
             session.close()

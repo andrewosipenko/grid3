@@ -9,7 +9,4 @@ class ReadonlyGrid3Column extends Grid3Column {
     ReadonlyGrid3Column(String path, Grid3 grid3) {
         super(path, grid3)
     }
-    Grid3Cell buildGrid3CellFromDataRow(Object[] row){
-        return new Grid3Cell(value: row[index])
-    }
 }

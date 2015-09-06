@@ -1,0 +1,12 @@
+.grid3table-container td {
+  border: 1px solid #D4D4D4;
+}
+.grid3table-container thead tr {
+  background-color: #f0f0f0;
+}
+.grid3table-container td.selected {
+  outline: #217346 solid 2px;
+}
+.grid3table-container tbody td.readonly {
+  background-color: #f9f9f9;
+}

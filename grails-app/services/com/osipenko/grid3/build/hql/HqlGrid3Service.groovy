@@ -5,6 +5,8 @@ import com.osipenko.grid3.model.Grid3
 import com.osipenko.grid3.model.Grid3Column
 import com.osipenko.grid3.model.Grid3Table
 import com.osipenko.grid3.model.ReadonlyGrid3Column
+import com.osipenko.grid3.model.ReferenceGrid3Column
+import com.osipenko.grid3.model.ValueGrid3Column
 
 class HqlGrid3Service extends AbstractGrid3Service {
     /**
@@ -41,21 +43,35 @@ class HqlGrid3Service extends AbstractGrid3Service {
 
         HqlGrid3 res = new HqlGrid3()
         res.aliasTableMap = [:]
-        res.grid3Columns = parseColumns(xml, res)
         res.grid3Table = parseTable(xml, res.aliasTableMap)
 
         List<String> hqlClauses = []
 
-        hqlClauses << buildSelectHqlClause(res)
+        hqlClauses << "SELECT CLAUSE PLACEHOLDER"
         hqlClauses << buildFromHqlClause(res.grid3Table)
         hqlClauses << buildInnerJoinHqlClause(xml, res.aliasTableMap)
         hqlClauses << buildLeftJoinHqlClause(xml, res.aliasTableMap)
         hqlClauses << buildWhereHqlClause(xml)
 
+        res.grid3Columns = parseColumns(xml, res)
+        hqlClauses[0] = buildSelectHqlClause(res)
+
         res.hql = hqlClauses.findAll{it}.join('\n')
         log.debug "HQL: ${res.hql}"
+        println "HQL: ${res.hql}"
 
         return res
+    }
+
+    public void update(Grid3 grid3, String path, String value){
+        if(path in grid3.grid3Columns){
+            throw new IllegalArgumentException("Can't find column by path ${path}." +
+                "The following pathes are available: ${grid3.columnPathes.keySet()}")
+        }
+        def (alias, property) = path.split('\\.')
+        Grid3Table grid3Table = grid3.aliasTableMap[alias]
+
+        // TODO
     }
 
     private List<Grid3Column> parseColumns(def xml, Grid3 grid3){
@@ -65,8 +81,9 @@ class HqlGrid3Service extends AbstractGrid3Service {
             String path = it.@path.text()
             switch (updateMode){
                 case 'value':
+                    return new ValueGrid3Column(path, grid3)
                 case 'reference':
-                    throw new RuntimeException("Not implemented")
+                    return new ReferenceGrid3Column(path, grid3)
                 case null:
                 case '':
                     return new ReadonlyGrid3Column(path, grid3)

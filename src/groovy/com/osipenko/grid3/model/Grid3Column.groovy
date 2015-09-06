@@ -1,6 +1,7 @@
 package com.osipenko.grid3.model
 
 import com.osipenko.grid3.view.Grid3Cell
+import com.osipenko.grid3.view.Grid3Row
 
 /**
  * Created by osa on 17.08.2014.
@@ -10,7 +11,7 @@ abstract class Grid3Column {
     protected final String alias
     protected final String property
     protected final Grid3 grid3
-    protected int index
+    protected final int index
 
     public Grid3Column(String path, Grid3 grid3){
         this.path = path
@@ -28,5 +29,7 @@ abstract class Grid3Column {
         return grid3.columnPathes.size() - 1
     }
 
-    abstract Grid3Cell buildGrid3CellFromDataRow(Object[] row)
+    public Object getValue(Grid3Row grid3Row){
+        return grid3Row.getValue(index)
+    }
 }

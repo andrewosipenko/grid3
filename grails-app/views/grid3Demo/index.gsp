@@ -11,8 +11,8 @@ hello2
   <tbody>
     <g:each in="${grid3View.rows}" var="grid3Row">
       <tr>
-        <g:each in="${grid3Row.cells}" var="grid3Cell">
-          <td>${grid3Cell.value}</td>
+        <g:each in="${grid3View.grid3.grid3Columns}" var="grid3Column">
+          <td>${grid3Column.getValue(grid3Row)}</td>
         </g:each>
         <td><a href="#">Delete</a></td>
       </tr>

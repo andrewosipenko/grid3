@@ -13,7 +13,7 @@ class SimpleGrid3View extends Grid3View {
 
     public SimpleGrid3View(Grid3 grid3, List<Grid3Row> rows){
         super(grid3)
-        rows = rows
+        this.rows = rows
     }
 
     public List<Grid3Row> getRows(){
