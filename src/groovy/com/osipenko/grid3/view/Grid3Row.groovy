@@ -11,6 +11,9 @@ public final class Grid3Row {
     public Grid3Row(Object[] data){
         this.data = data
     }
+    public Grid3Row(List data){
+        this.data = data.toArray(new Object[0])
+    }
 
     public Object getValue(int index){
         return data[index]

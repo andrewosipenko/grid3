@@ -8,16 +8,17 @@ import com.osipenko.grid3.view.Grid3Row
  */
 abstract class Grid3Column {
     final String path
-    protected final String alias
-    protected final String property
+    public final String alias
+    public final String property
     protected final Grid3 grid3
-    protected final int index
+    public final int index
 
     public Grid3Column(String path, Grid3 grid3){
         this.path = path
         this.grid3 = grid3
         (alias, property) = path.split('\\.')
         index = assignPathIndex(path)
+        grid3.addColumnPath(path)
     }
 
     protected int assignPathIndex(String path){
@@ -26,7 +27,7 @@ abstract class Grid3Column {
             return res
         }
         grid3.columnPathes << path
-        return grid3.columnPathes.size() - 1
+        return grid3.columnPathes.size()
     }
 
     public Object getValue(Grid3Row grid3Row){

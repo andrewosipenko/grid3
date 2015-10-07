@@ -23,11 +23,11 @@
     this.table.find('thead').append(headerRow);
     var viewColumnPathes = this.viewColumnPathes = new Array();
     var viewColumnUpdateModes = this.viewColumnUpdateModes = new Array();
-    this.queryXml.find("column").each(function(){
+    this.queryXml.find("> hqlXml > columns > column").each(function(){
       var path = $(this).attr('path');
       headerRow.append($('<td>').text(path));
       viewColumnPathes.push(path);
-      viewColumnUpdateModes.push($(this).attr('update'));
+      viewColumnUpdateModes.push($(this).attr('editable'));
     });
 
     this.spinnerRow = $('<tr class="grid3-spinner">');
@@ -66,7 +66,7 @@
     var columns = this.model.columns;
     for (var i = 0; i < columns.length; i++) {
       var column = columns[i];
-      columnByPath[column] = i;
+      columnByPath[column.path] = i;
     }
     this.columnByPath = columnByPath;
     this.buildRowTable();
@@ -76,6 +76,7 @@
     for (var i = 0; i < this.model.rows.length; i++) {
       var row = this.model.rows[i];
       var tr = $('<tr>');
+      tr.data('originalRow', row);
       this.table.find('tbody').append(tr);
       for (var j = 0; j < this.viewColumnPathes.length; j++) {
         var columnPath = this.viewColumnPathes[j];
@@ -100,7 +101,7 @@
     return res;
   };
   Grid3Widget.prototype.selectCell = function(cell) {
-    if(cell == this.selectedCell) {
+    if(cell.is(this.selectedCell)) {
       return;
     }
     this.makeSelectedCellNotEditable();
@@ -137,7 +138,8 @@
       this.updateValueCellRemotely(this.selectedCell);
     }
     else if(this.selectedCell.hasClass('update-reference')){
-      this.removeReferenceCellEditor(this.selectedCell);
+      var newReference = this.removeReferenceCellEditor(this.selectedCell);
+      this.updateReferenceCellRemotely(this.selectedCell, newReference);
     }
     this.editSelectedCell = false;
   };
@@ -153,22 +155,79 @@
     $(cell).text(text);
   }
   Grid3Widget.prototype.renderReferenceCellEditor = function(cell) {
-    alert('renderReferenceCellEditor');
+    var data = this.buildQueryJson(cell, this.getCellIndex(cell));
+    $.ajax(
+        {
+          type: 'GET',
+          url: this.url + '/referenceOptions',
+          data: data,
+          dataType: 'json',
+          context: this
+        }
+    ).done($.proxy(this.renderReferenceCellEditorCallback, cell));
+  }
+
+  Grid3Widget.prototype.renderReferenceCellEditorCallback = function(data) {
+    var cell = this;
+    var text = $(cell).text();
+    cell.text('');
+    var select = $('<select>');
+    var rows = data.rows;
+    for (var i = 0; i < rows.length; i++) {
+      var row = rows[i];
+      var option = $('<option>');
+      option.attr('value', row[0]);
+      option.text(row[1]);
+      select.append(option);
+    }
+    cell.append(select);
+    select.focus();
   }
   Grid3Widget.prototype.removeReferenceCellEditor = function(cell) {
-
+    var res = $(cell).find('select').val();
+    var text = $(cell).find('select option:selected').remove().text();
+    $(cell).text(text);
+    return res;
   }
   Grid3Widget.prototype.updateValueCellRemotely = function(cell) {
-    var index = this.getCellIndex(cell);
+    var data = this.buildQueryJson(cell, this.getCellIndex(cell));
+    data.value = cell.text();
     $.ajax(
       {
+        type: 'POST',
         url: this.url + '/update',
-        data: {'query' : this.query, 'path' : this.viewColumnPathes[index], 'value': cell.text()},
+        data: data,
         dataType: 'json',
         context: this
       }
     ).done(this.updateCellRemotelyCallback);
   };
+  Grid3Widget.prototype.buildQueryJson = function(cell, index){
+    var originalRow = $(cell).closest('tr').data('originalRow');
+    return {'query' : this.query, 'originalRow' : JSON.stringify(originalRow), 'path' : this.viewColumnPathes[index]};
+  }
+  Grid3Widget.prototype.updateReferenceCellRemotely = function(cell, newReference) {
+    var valueViewIndex = this.getCellIndex(cell);
+    var valuePath = this.viewColumnPathes[valueViewIndex];
+    var valueColumnIndex = this.columnByPath[valuePath];
+    var valueColumn = this.model.columns[valueColumnIndex];
+    alert(valueColumn);
+
+    var originalRow = $(cell).closest('tr').data('originalRow');
+    var data = {'query' : this.query, 'originalRow' : JSON.stringify(originalRow), 'path' : valueColumn.target};
+
+    data.value = newReference;
+    $.ajax(
+        {
+          type: 'POST',
+          url: this.url + '/update',
+          data: data,
+          dataType: 'json',
+          context: this
+        }
+    ).done(this.updateCellRemotelyCallback);
+  }
+
   Grid3Widget.prototype.updateCellRemotelyCallback = function(cell) {
 
   }

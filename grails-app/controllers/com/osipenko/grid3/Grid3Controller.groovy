@@ -1,7 +1,10 @@
 package com.osipenko.grid3
 
 import com.osipenko.grid3.model.Grid3
+import com.osipenko.grid3.model.OptionGrid3Column
+import com.osipenko.grid3.model.ReferenceGrid3Column
 import com.osipenko.grid3.view.Grid3View
+import grails.converters.JSON
 
 class Grid3Controller {
     def hqlGrid3Service
@@ -12,16 +15,24 @@ class Grid3Controller {
      *
      * @param query required
      * @return JSON. Example:
-     * {
-         "type":"com.osipenko.grid3.model.ReadonlyGrid3Column",
-         "index":4,
-         "path":"transmission.transmissionId",
+     {
          "columns":[
-             "brand.brandId",
-             "model.modelId",
-             "car.carId",
-             "engine.engineId",
-             "transmission.transmissionId"
+             [
+                "type" : "com.osipenko.grid3.model.ReadonlyGrid3Column",
+                "index" : 1,
+                "path" : "brand.brandId"
+             ],
+             [
+                 "type" : "com.osipenko.grid3.model.ValueGrid3Column",
+                 "index" : 2,
+                 "path" : "car.carId"
+             ],
+             [
+                 "type" : "com.osipenko.grid3.model.ReferenceGrid3Column",
+                 "index" : 3,
+                 "path" : "engine.engineId",
+                 "target" : "engine.id"
+             ]
          ],
          "rows":[
              [
@@ -44,18 +55,47 @@ class Grid3Controller {
     def index(String query){
         Grid3 grid3 = hqlGrid3Service.buildGrid3(query)
         Grid3View grid3View = simpleGrid3ViewService.buildView(grid3)
+        println "hello ${grid3View.grid3.grid3Columns}"
+        renderGrid3View(grid3View)
+    }
+    private void renderGrid3View(Grid3View grid3View){
         render (contentType:"text/json") {
             columns = grid3View.grid3.grid3Columns.collect{
-                type = it.class
-                index = it.index
-                path = it.path
+                def res = [
+                    type: it.class,
+                    index: it.index,
+                    path: it.path
+                ]
+                if (it instanceof OptionGrid3Column) {
+                    res.target = it.target
+                }
+                else if (it instanceof ReferenceGrid3Column) {
+                    res.target = it.keyPath
+                }
+                return res
             }
             rows = grid3View.rows*.data
         }
     }
-
-    def update(String query, String path, String value){
+    /**
+     *
+     *
+     * @param query original query used to construct the grid
+     * @param originalRow row before editing
+     * @param path
+     */
+    def referenceOptions(String query, String originalRow, String path){
         Grid3 grid3 = hqlGrid3Service.buildGrid3(query)
-        hqlGrid3Service.update(grid3, path, value)
+        ReferenceGrid3Column referenceGrid3Column = (ReferenceGrid3Column)grid3.getColumnByPath(path)
+
+        Grid3View optionGrid3View = simpleGrid3ViewService.buildView(referenceGrid3Column.optionGrid3)
+        renderGrid3View(optionGrid3View)
+    }
+
+    def update(String query, String originalRow, String path, String value) {
+        log.info "Updating ${path} to ${value}"
+        Grid3 grid3 = hqlGrid3Service.buildGrid3(query)
+        hqlGrid3Service.update(grid3, JSON.parse(originalRow), path, value)
+        render ""
     }
 }
